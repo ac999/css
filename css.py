@@ -8,9 +8,9 @@ def LFSR(s, v, l):
     result = []
     for i in range (0, l):
         result.append(s[-1])
-        b = s[ -1 - v[0] ] # in loc de s [v[0]]
+        b = s[ -1 - v[0] ]
         for j in v[1:]:
-            b ^= s[-1 - j] # in loc de s[j]
+            b ^= s[-1 - j]
         s = [ b ] + s[:-1]
     return (result, s)
 
@@ -47,13 +47,13 @@ def CSS(s, l):
         yi, s2 = LFSR(s2, v25, 8)
         xi = listToInt(xi)
         yi = listToInt(yi)
-        z += intToList( (xi + yi + c) % 256, pad = 8 )
+        z += intToList( (xi + yi + c) % 256, pad = 8)
         c = carry(xi, yi)
     return z
 
 def nBitGenerator(n):
     result = []
-    for b in itertools.product("01", repeat=n):
+    for b in itertools.product("01", repeat = n):
         result.append(list(map(lambda x: int(x), ''.join(b))))
     return result
 
@@ -69,18 +69,14 @@ def deCSS():
     v17 = [14, 0]
     v25 = [12, 4, 3, 0]
     z = CSS(s_test, 100)
-    z1 = listToInt(z[:8])
-    z2 = listToInt(z[8:16])
-    z3 = listToInt(z[16:24])
+    z_atk = z[16:24] + z[8:16] + z[:8]
     bx = nBitGenerator(16)
     z_list = []
     for s1 in bx:
         s2 = []
         x = LFSR(s1, v17, 8*3)[0]
-        x1 = listToInt(x[:8])
-        x2 = listToInt(x[8:16])
-        x3 = listToInt(x[16:])
-        y = (2**16)*(z3-x3)+(2**8)*(z2-x2)+z1-x1
+        x = x[16:24] + x[8:16] + x[:8]
+        y = listToInt(z_atk) - listToInt(x)
         y = y % (2**24)
         y = intToList(y, pad = 24)
         s2 = y[16:] + y[8:16] + y[:8]
