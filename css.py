@@ -47,7 +47,7 @@ def CSS(s, l):
         yi, s2 = LFSR(s2, v25, 8)
         xi = listToInt(xi)
         yi = listToInt(yi)
-        z += intToList( (xi + yi + c) % 256 )
+        z += intToList( (xi + yi + c) % 256, pad = 8 )
         c = carry(xi, yi)
     return z
 
@@ -80,6 +80,10 @@ def deCSS():
         x1 = listToInt(x[:8])
         x2 = listToInt(x[8:16])
         x3 = listToInt(x[16:])
+        y = (2**16)*(z3-x3)+(2**8)*(z2-x2)+z1-x1
+        y = y % (2**24)
+        y = intToList(y, pad = 24)
+        s2 = y[16:] + y[8:16] + y[:8]
         s = s1 + s2
         print ("Trying seed: " + "".join(map(lambda x: str(x), s)) )
         zp = CSS(s, 100)
@@ -90,10 +94,20 @@ def deCSS():
             # print(zp)
             # z_list.append(s)
             return "Found: {}.\n Used seed: {}".format(s, s_test)
-    return s_test in s
+    return "Error, seed couldn't be found"
 
 
 
 # print(CSS(s_test, 100))
 
-# print(deCSS())
+print(deCSS())
+
+# def nBit():
+#     x = [1,1,1,1,1,1,1,1]
+#     print("x = {}".format(x))
+#     x = listToInt(x)
+#     y = (2**8) * x
+#     y = intToList(y, pad = 4)
+#     print("y = (2^8) * x = {}", y)
+#
+# nBit()
