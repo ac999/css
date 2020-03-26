@@ -69,28 +69,28 @@ def deCSS():
     v17 = [14, 0]
     v25 = [12, 4, 3, 0]
     z = CSS(s_test, 100)
-    z_atk = z[16:24] + z[8:16] + z[:8]
+    z_atk = z[16:] + z[8:16] + z[:8] # 2**16 z3 + 2**8 z2 + z1
     bx = nBitGenerator(16)
-    z_list = []
     for s1 in bx:
         s2 = []
+
         x = LFSR(s1, v17, 8*3)[0]
-        x = x[16:24] + x[8:16] + x[:8]
+        x = x[16:] + x[8:16] + x[:8] # 2**16 x3 + 2**8 x2 + x1
+
         y = listToInt(z_atk) - listToInt(x)
         y = y % (2**24)
         y = intToList(y, pad = 24)
-        s2 = y[16:] + y[8:16] + y[:8]
+        y = y[16:] + y[8:16] + y[:8] # 2**16 y3 + 2**8 y2 + y1
+
+        s2 = # to do
         s = s1 + s2
+
         print ("Trying seed: " + "".join(map(lambda x: str(x), s)) )
         zp = CSS(s, 100)
+
         if z == zp:
-            # print("Found the seed: " + "".join(map(lambda x: str(x), s)))
-            # print ("Seed to be recovered: " + "".join(map(lambda x: str(x), s_test)) )
-            # print(z)
-            # print(zp)
-            # z_list.append(s)
             return "Found: {}.\n Used seed: {}".format(s, s_test)
-    return "Error, seed couldn't be found"
+    return "Error, seed was not found."
 
 
 
@@ -99,11 +99,13 @@ def deCSS():
 print(deCSS())
 
 # def nBit():
-#     x = [1,1,1,1,1,1,1,1]
-#     print("x = {}".format(x))
-#     x = listToInt(x)
-#     y = (2**8) * x
-#     y = intToList(y, pad = 4)
-#     print("y = (2^8) * x = {}", y)
+#     x = [1,0,0,0]
+#     # print("x = {}".format(x))
+#     xi = listToInt(x)
+#     y = [0,0,1,1]
+#     yi = listToInt(y)
+#     zi = xi - yi
+#     z = intToList(zi, pad = max(len(x),len(y)))
+#     print("{} -\n{} =\n{}".format(x, y, z))
 #
 # nBit()
