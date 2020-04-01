@@ -61,93 +61,39 @@ def nBitGenerator(n):
 def createS():
     return [random.randint(0,1) for i in range(40)]
 
-# s_test = [0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1,
-# 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]
-
-s_test = [0] * 40
-
+s_test = [0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1,
+0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0]
 
 def deCSS():
     v17 = [14, 0]
     v25 = [12, 4, 3, 0]
     z = CSS(s_test, 100)
-    z_atk = z[16:] + z[8:16] + z[:8] # 2**16 z3 + 2**8 z2 + z1
+    z_atk = z[16:24] + z[8:16] + z[:8] # 2**16 z3 + 2**8 z2 + z1
 
-    xp = LFSR([1] + s_test[:16], v17, 24)[0]
-    x = xp[16:] + xp[8:16] + xp[:8]
+    for s1 in nBitGenerator(16):
+        s2 = []
 
-    y = (listToInt(z_atk) - listToInt(x)) % (2**24) # 2**16 y3 + 2**8 y2 + y1
-    y = intToList(y, pad = 24)
-    y = y[16:] + y[8:16] + y[:8]
+        x = LFSR([1] + s1, v17, 8*3)[0]
+        x = x[16:24] + x[8:16] + x[:8] # 2**16 x3 + 2**8 x2 + x1
 
-    yp = LFSR([1] + s_test[16:], v25, 24)[0]
+        y = listToInt(z_atk) - listToInt(x)
+        y = y % (2**24)
+        y = intToList(y, pad = 24) # y = 2**16 y3 + 2**8 y2 + y1
+        y1 = y[16:24];
+        y2 = y[8:16];
+        y3 = y[:8];
+        s2 = y1 + y2 + y3
+        s2.reverse()
 
+        s = s1 + s2
 
+        print ("Trying seed: " + "".join(map(lambda x: str(x), s)) )
 
-    print("x:\n{}\n{}\n{}".format(s_test[:16], xp, x))
-    print("y:\n{}\n{}\n{}".format(s_test[16:], yp, y))
-    # bx = nBitGenerator(16)
-    # for s1 in bx:
-    #     s2 = []
-    #
-    #     x = LFSR(s1, v17, 8*3)[0]
-    #     x = x[16:] + x[8:16] + x[:8] # 2**16 x3 + 2**8 x2 + x1
-    #
-    #     y = listToInt(z_atk) - listToInt(x)
-    #     y = y % (2**24)
-    #     y = intToList(y, pad = 24) # 2**16 y3 + 2**8 y2 + y1
-    #     y1 = y[16:]; y1.reverse()
-    #     y2 = y[8:16]; y2.reverse()
-    #     y3 = y[:8]; y3.reverse()
-    #     s2 = y1 + y2 + y3
-    #
-    #     s = s1 + s2
-    #
-    #     print ("Trying seed: " + "".join(map(lambda x: str(x), s)) )
-    #
-    #     zp = CSS(s, 100)
-    #
-    #     if z == zp:
-    #         return "Found: {}.\n Used seed: {}".format(s, s_test)
+        zp = CSS(s, 100)
+
+        if z == zp:
+            return "Found: {}.\n Used seed: {}".format(s, s_test)
 
     return "Error, seed was not found."
-
-
-        # s2.append(y[16:] + y[8:16] + y[:8])
-        # s2.append(
-        # intToList((listToInt(y[16:])-1)%2**8, pad = 8) + y[8:16] + y[:8]
-        # )
-        # s2.append(
-        # y[16:] + intToList((listToInt(y[8:16])-1)%2**8, pad = 8) + y[:8]
-        # )
-        # s2.append(
-        # y[16:] + y[8:16] + intToList((listToInt(y[:8])-1)%2**8, pad = 8)
-        # )
-        # s2.append(
-        # intToList((listToInt(y[16:])-1)%2**8, pad = 8) +
-        # intToList((listToInt(y[8:16])-1)%2**8, pad = 8) + y[:8]
-        # )
-        # s2.append(
-        # intToList((listToInt(y[16:])-1)%2**8, pad = 8) + y[8:16] +
-        # intToList((listToInt(y[:8])-1)%2**8, pad = 8)
-        # )
-        # s2.append(
-        # y[16:] + intToList((listToInt(y[8:16])-1)%2**8, pad = 8) +
-        # intToList((listToInt(y[:8])-1)%2**8, pad = 8)
-        # )
-        # s2.append(
-        # intToList((listToInt(y[16:])-1)%2**8, pad = 8) +
-        # intToList((listToInt(y[8:16])-1)%2**8, pad = 8) +
-        # intToList((listToInt(y[:8])-1)%2**8, pad = 8)
-        # )
-        #
-        # for s2p in s2:
-        #     s = s1 + s2p
-        #     print ("Trying seed: " + "".join(map(lambda x: str(x), s)) )
-        #     zp = CSS(s, 100)
-        #
-        #     if z == zp:
-        #         return "Found: {}.\n Used seed: {}".format(s, s_test)
-
 
 print(deCSS())
