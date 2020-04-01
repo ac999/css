@@ -92,7 +92,7 @@ def deCSS():
         zp = CSS(s, 100)
 
         if z == zp:
-            return "Found: {}.\n Used seed: {}".format(s, s_test)
+            return "Found seed: {}.".format(s)
 
     return "Error, seed was not found."
 
