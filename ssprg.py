@@ -1,8 +1,15 @@
-import random
-import typing
-import marshal
-import pickle
 from secrets import randbelow
+import datetime
+import json
+
+def dump_json(path, var):
+    with open(path, 'w') as fh:
+        json.dump(var, fh)
+
+def load_json(path):
+    with open(path, 'r') as fh:
+        return json.load(fh)
+
 
 def listToInt(_list):
     return int("".join(map(lambda x: str(x), _list)) , 2)
@@ -13,83 +20,55 @@ def intToList(_int, pad = 0):
     if (pad == 0 or len(_list) >= pad):
         return _list
 
-    _list = [0] * (pad - len(_list) ) +_list
+        _list = [0] * (pad - len(_list) ) +_list
 
-    return _list
+        return _list
 
-# seed = seed, prg = prg function, n = n-wise composition parameter
-def BlumMicali(seed, prg, n:int):
-    result = []
-    si = seed
+def seed_prg(seed):
+    n = 256
+    q = 2**(2*256)
+    a = load_json('a_seed')
+    result = 0
     for i in range(n):
-        ri, si = prg(si)
-        result += ri
-    result += si
-    return result
+        result += (a[i]*seed[i]) % q
+    result %= q
+    return intToList(result, pad = n)[:n]
 
-# seed = seed, prg = prg function
-# this function will return the result of the prg using the seed
-# and a new random seed from the seed space
-def SubsetSumPRGExtension(seed , prg):
-    result = prg(seed)
-    new_seed = [randbelow(2) for i in range(len(seed))]
-    return (result, new_seed)
-
-# SubsetSum - function, n - how many time to be parallelised
-# def ParallelSubsetSum(SubsetSum, n:int, seed_length:int):
-
-
-# generator; q should be  n = length of seed
-def SubsetSumPRGFamily(q:int, n:int):
-    a = [randbelow(q) for a_ix in range(n)]
-    def SubsetSumPRG(seed):
+def my_prg(seed, bytes):
+    n = 256
+    q = 2**(2*256)
+    a = load_json('a_prg')
+    def prg(seed, n):
         result = 0
         for i in range(n):
             result += (a[i]*seed[i]) % q
         result %= q
         return result
+    result = []
+    si = seed
+    while (bytes>0):
+        prgOutput = intToList(prg(si, n), pad = n)
+        result += prgOutput
+        si = seed_prg(si)
+        bytes -= (len(prgOutput))/8
+    result += si
+    return result
 
-    return SubsetSumPRG
+# create seed:
+def new_seed(_len):
+    return [randbelow(2) for i in range(_len)]
 
+# create vector a:
+def create_a(q,n):
+    return [randbelow(q) for a_ix in range(n)]
 
-####### utils for saving the  generated prg #######
-# path = disk path where to save function. prg = prg function to be saved
-def savePRG(path, prg):
-    with open(path, 'wb') as filehandler:
-        pickle.dump(prg, filehandler)
+def test(debug = False):
+    seed = load_json('test_seed')
+    result = my_prg(seed, 2048), len(my_prg(seed, 2048))
+    print(result)
+    if (debug):
+        data = {"date": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "result": result}
+        dump_json('debug', data)
 
-# path = disk path from where to load function
-def loadPRG(path):
-    filehandler = open(path, 'rb')
-    function = pickle.load(filehandler)
-    return function
-
-n = 40
-s = [0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
- 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0]
- 
-def pickler():
-    saveprg('newprg.func', SubsetSumPRGFamily(2**(2*n), n))
-
-def test():
-    pickler()
-    newG = loadprg('newprg.func')
-    # print(G(s))
-    print(newG(s))
-
-
-# ''' Choosing an n and q so that 2n = log2(q) gives a prg whose output is twice
-# the size of the input. '''
-# def SubsetSumprg(seed, q, a):
-#     n = len(seed)
-#     q = 2**(2*n)
-#     result = 0
-#     for ix_bit in range(n):
-#         result += (a[ix_bit] * seed[ix_bit])%q
-#     result = intToList(result)
-#     new_seed = intToList(listToInt(seed)^listToInt(result[:n+1]))
-#     return result, new_seed
-#
-# s = [random.randint(0,1) for i in range(40)]
-#
-# print(SubsetSumprg(s))
+test(True)
